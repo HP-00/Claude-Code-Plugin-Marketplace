@@ -1,0 +1,11 @@
+{
+  "name": "hp-00-plugins",
+  "owner": {
+    "name": "HP-00"
+  },
+  "metadata": {
+    "description": "A collection of Claude Code plugins by HP-00",
+    "version": "1.0.0"
+  },
+  "plugins": []
+}
