@@ -37,7 +37,7 @@ Once the marketplace is added, install any plugin:
 
 | Plugin | Version | Description | Category |
 |--------|---------|-------------|----------|
-| *Coming soon* | - | - | - |
+| [prisma-schema-reviewer](plugins/prisma-schema-reviewer) | 1.0.0 | Interactive Prisma schema review with expert guidance on native types, indexes, relations, and referential actions | Database |
 
 ## Managing the Marketplace
 

@@ -7,5 +7,14 @@
     "description": "A collection of Claude Code plugins by HP-00",
     "version": "1.0.0"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "prisma-schema-reviewer",
+      "source": "./plugins/prisma-schema-reviewer",
+      "description": "Interactive Prisma schema review with expert guidance on native types, indexes, relations, and referential actions for PostgreSQL",
+      "version": "1.0.0",
+      "category": "database",
+      "keywords": ["prisma", "postgresql", "database", "schema", "review", "best-practices"]
+    }
+  ]
 }
