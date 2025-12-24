@@ -1,0 +1,21 @@
+{
+  "name": "prisma-schema-reviewer",
+  "version": "1.0.0",
+  "description": "Interactive Prisma schema review with expert guidance on native types, indexes, relations, and referential actions for PostgreSQL",
+  "author": {
+    "name": "HP-00",
+    "url": "https://github.com/HP-00"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HP-00/Claude-Code-Plugin-Marketplace"
+  },
+  "keywords": [
+    "prisma",
+    "postgresql",
+    "database",
+    "schema",
+    "review",
+    "best-practices"
+  ]
+}

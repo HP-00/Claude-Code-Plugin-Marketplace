@@ -1,0 +1,434 @@
+// =============================================================================
+// GOOD PATTERNS - E-Commerce Schema Reference
+// =============================================================================
+// Educational example demonstrating Prisma best practices for PostgreSQL.
+// Based on patterns from:
+// - Prisma official examples (github.com/prisma/prisma-examples)
+// - Prisma documentation best practices
+// - PostgreSQL production patterns
+//
+// Domain: E-commerce platform (Products, Orders, Reviews)
+// =============================================================================
+
+generator client {
+  provider     = "prisma-client"
+  output       = "./generated"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Required for Neon/serverless
+}
+
+// =============================================================================
+// ENUMS - Type-safe fixed value sets
+// =============================================================================
+// Use enums when values rarely change and type safety is important
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// =============================================================================
+// USER MODEL - Authentication base
+// =============================================================================
+// Pattern: Separate auth concerns from profile concerns
+
+model User {
+  id            String    @id @default(cuid())
+
+  // Auth fields - VarChar with known limits
+  email         String    @unique @db.VarChar(255)
+  passwordHash  String?   @db.VarChar(255)
+
+  // Profile fields
+  name          String?   @db.VarChar(100)
+  avatar        String?   @db.Text  // URLs can be long
+
+  // Soft delete pattern
+  deletedAt     DateTime? @db.Timestamptz(6)
+
+  // Audit timestamps - ALWAYS use Timestamptz for timezone safety
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  orders        Order[]
+  reviews       Review[]
+  addresses     Address[]
+  cart          CartItem[]
+
+  // Indexes for common queries
+  @@index([email])
+  @@index([deletedAt])    // For filtering active users
+  @@index([createdAt])
+
+  // Table mapping (optional but good for DB naming conventions)
+  @@map("users")
+}
+
+// =============================================================================
+// ONE-TO-MANY RELATION - User has many Addresses
+// =============================================================================
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+
+  // Address fields with appropriate lengths
+  label       String   @db.VarChar(50)   // "Home", "Work"
+  street      String   @db.VarChar(200)
+  city        String   @db.VarChar(100)
+  state       String?  @db.VarChar(100)
+  postalCode  String   @db.VarChar(20)
+  country     String   @db.Char(2)       // ISO country code
+
+  // Boolean flags
+  isDefault   Boolean  @default(false)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relation with explicit onDelete
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Orders shipped to this address
+  orders      Order[]
+
+  // REQUIRED: Index on foreign key
+  @@index([userId])
+  @@index([isDefault])
+
+  @@map("addresses")
+}
+
+// =============================================================================
+// CATEGORY MODEL - Hierarchical self-relation
+// =============================================================================
+// Pattern: Self-referential for tree structures (parent-child)
+
+model Category {
+  id          String   @id @default(cuid())
+
+  name        String   @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+
+  // UI/display
+  icon        String?  @db.VarChar(50)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  // Self-referential relation for hierarchy
+  parentId    String?
+  // CRITICAL: Self-relations should use SetNull or NoAction
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  products    ProductCategory[]
+
+  // Indexes
+  @@index([parentId])
+  @@index([isActive, sortOrder])
+  @@index([slug])
+
+  @@map("categories")
+}
+
+// =============================================================================
+// PRODUCT MODEL - Main entity with arrays and JSON
+// =============================================================================
+
+model Product {
+  id          String   @id @default(cuid())
+
+  // Basic info
+  name        String   @db.VarChar(200)
+  slug        String   @unique @db.VarChar(200)
+  description String?  @db.Text
+  sku         String   @unique @db.VarChar(50)
+
+  // Pricing - ALWAYS use Decimal for money, NEVER @db.Money
+  price       Decimal  @db.Decimal(10, 2)
+  compareAt   Decimal? @db.Decimal(10, 2)  // Original price for sales
+
+  // Inventory
+  quantity    Int      @default(0)
+  lowStock    Int      @default(10)
+
+  // Status
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+
+  // Arrays - PostgreSQL native feature
+  images      String[] @default([])
+  tags        String[] @default([])
+
+  // JSON - ALWAYS use JsonB for indexing and performance
+  attributes  Json?    @db.JsonB  // { "color": "red", "size": "M" }
+  metadata    Json?    @db.JsonB
+
+  // SEO fields
+  metaTitle       String? @db.VarChar(70)
+  metaDescription String? @db.VarChar(160)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  categories  ProductCategory[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+
+  // Indexes for common queries
+  @@index([isActive, isFeatured])
+  @@index([price])
+  @@index([createdAt])
+  @@index([sku])
+
+  // GIN index for array searching
+  @@index([tags], type: Gin)
+
+  @@map("products")
+}
+
+// =============================================================================
+// EXPLICIT MANY-TO-MANY - Products <-> Categories
+// =============================================================================
+// Pattern: Use explicit when you need metadata (sortOrder, featured)
+
+model ProductCategory {
+  id          String   @id @default(cuid())
+  productId   String
+  categoryId  String
+
+  // Metadata fields - why we use explicit join table
+  sortOrder   Int      @default(0)
+  isFeatured  Boolean  @default(false)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations with Cascade - delete junction when either side deleted
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate assignments
+  @@unique([productId, categoryId])
+
+  // REQUIRED: Indexes on all foreign keys
+  @@index([productId])
+  @@index([categoryId])
+  @@index([isFeatured])
+
+  @@map("product_categories")
+}
+
+// =============================================================================
+// ORDER MODEL - Complex status tracking
+// =============================================================================
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique @db.VarChar(20)  // Human-readable ID
+  userId          String
+
+  // Status with enums for type safety
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+
+  // Pricing - Decimal for accuracy
+  subtotal        Decimal       @db.Decimal(10, 2)
+  tax             Decimal       @db.Decimal(10, 2)
+  shipping        Decimal       @db.Decimal(10, 2)
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+
+  // Shipping
+  shippingAddressId String?
+
+  // Payment reference (from Stripe/PayPal)
+  paymentIntentId String?       @db.VarChar(100)
+
+  // Notes
+  customerNote    String?       @db.Text
+  internalNote    String?       @db.Text
+
+  // Important dates
+  paidAt          DateTime?     @db.Timestamptz(6)
+  shippedAt       DateTime?     @db.Timestamptz(6)
+  deliveredAt     DateTime?     @db.Timestamptz(6)
+  cancelledAt     DateTime?     @db.Timestamptz(6)
+
+  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  shippingAddress Address?      @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+
+  // Indexes for common queries
+  @@index([userId])
+  @@index([shippingAddressId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([orderNumber])
+  @@index([createdAt])
+
+  @@map("orders")
+}
+
+// =============================================================================
+// ORDER ITEM - Snapshot pattern for historical accuracy
+// =============================================================================
+// Pattern: Store product info at time of purchase (prices can change)
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+
+  // Snapshot of product at purchase time
+  productName String   @db.VarChar(200)
+  productSku  String   @db.VarChar(50)
+
+  // Price at time of order (not current product price)
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  quantity    Int
+  total       Decimal  @db.Decimal(10, 2)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  // Indexes
+  @@index([orderId])
+  @@index([productId])
+
+  @@map("order_items")
+}
+
+// =============================================================================
+// REVIEW MODEL - User-generated content
+// =============================================================================
+
+model Review {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String
+
+  // Review content
+  rating      Int      // 1-5
+  title       String?  @db.VarChar(200)
+  content     String?  @db.Text
+
+  // Moderation
+  isVerified  Boolean  @default(false)  // Verified purchase
+  isApproved  Boolean  @default(false)  // Admin approved
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // One review per user per product
+  @@unique([productId, userId])
+
+  // Indexes
+  @@index([productId])
+  @@index([userId])
+  @@index([isApproved, rating])
+
+  @@map("reviews")
+}
+
+// =============================================================================
+// CART ITEM - Session-based shopping cart
+// =============================================================================
+
+model CartItem {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+
+  quantity    Int      @default(1)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // One cart item per user per product
+  @@unique([userId, productId])
+
+  // Indexes
+  @@index([userId])
+  @@index([productId])
+
+  @@map("cart_items")
+}
+
+// =============================================================================
+// SUMMARY OF PATTERNS DEMONSTRATED
+// =============================================================================
+//
+// 1. Native Types:
+//    - @db.VarChar(n) for strings with known max
+//    - @db.Text for unlimited content
+//    - @db.Decimal(10,2) for money (NOT @db.Money)
+//    - @db.Timestamptz(6) for timestamps
+//    - @db.JsonB for JSON (NOT @db.Json)
+//    - @db.Char(2) for fixed-length codes
+//
+// 2. Indexes:
+//    - @@index on ALL foreign keys
+//    - Composite indexes for common query patterns
+//    - GIN index for array searching
+//
+// 3. Relations:
+//    - Explicit onDelete on all relations
+//    - Cascade for child records
+//    - SetNull for optional references
+//    - Restrict for important data protection
+//    - Self-relations use SetNull/NoAction
+//
+// 4. Constraints:
+//    - @@unique on natural identifiers
+//    - @@unique on join table FKs
+//    - Composite unique for one-per-user patterns
+//
+// 5. Patterns:
+//    - Soft delete (deletedAt)
+//    - Audit timestamps (createdAt, updatedAt)
+//    - Snapshot pattern (OrderItem stores price at purchase)
+//    - Self-referential hierarchy (Category)
+//    - Explicit many-to-many with metadata
+//
+// =============================================================================
