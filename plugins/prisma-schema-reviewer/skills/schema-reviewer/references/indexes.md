@@ -8,15 +8,15 @@ From Prisma docs: "Relation scalar fields like `postId` that refer to another mo
 
 ```prisma
 // REQUIRED: Every FK needs an index
-model DoctorSpecialty {
-  doctorId    String
-  specialtyId String
+model PostTag {
+  postId    String
+  tagId     String
 
-  doctor    Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  specialty Speciality @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+  post      Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-  @@index([doctorId])      // Required for JOIN on doctor
-  @@index([specialtyId])   // Required for reverse lookups
+  @@index([postId])      // Required for JOIN on post
+  @@index([tagId])       // Required for reverse lookups
 }
 ```
 
@@ -24,7 +24,7 @@ model DoctorSpecialty {
 
 | Query Pattern | Index Type | Example |
 |---------------|------------|---------|
-| `WHERE fk = ?` | Single column | `@@index([doctorId])` |
+| `WHERE fk = ?` | Single column | `@@index([authorId])` |
 | `WHERE a = ? AND b = ?` | Composite (selective first) | `@@index([status, date])` |
 | `WHERE a = ? ORDER BY b` | Composite | `@@index([status, createdAt])` |
 | `WHERE array @> ?` | GIN | `@@index([tags], type: Gin)` |
@@ -37,12 +37,12 @@ model DoctorSpecialty {
 Put the field with most unique values first:
 
 ```prisma
-// GOOD: profileStatus has few values, createdAt has many
-// Query: WHERE profileStatus = 'ACTIVE' ORDER BY createdAt DESC
-@@index([profileStatus, createdAt])
+// GOOD: status has few values, createdAt has many
+// Query: WHERE status = 'ACTIVE' ORDER BY createdAt DESC
+@@index([status, createdAt])
 
 // BAD: Less selective field first hurts performance
-@@index([createdAt, profileStatus])
+@@index([createdAt, status])
 ```
 
 ### 2. Match Query Patterns
@@ -62,7 +62,7 @@ Index fields in the order they appear in WHERE clauses:
 PostgreSQL GIN (Generalized Inverted Index) enables efficient array operations:
 
 ```prisma
-model Condition {
+model Article {
   searchTerms String[] @default([])
 
   @@index([searchTerms], type: Gin)
@@ -76,10 +76,10 @@ model Condition {
 
 ```typescript
 // Efficient with GIN index
-const conditions = await prisma.condition.findMany({
+const articles = await prisma.article.findMany({
   where: {
     searchTerms: {
-      hasSome: ["back pain", "spine", "lower back"]
+      hasSome: ["typescript", "prisma", "postgresql"]
     }
   }
 })
@@ -102,25 +102,25 @@ const conditions = await prisma.condition.findMany({
 ## Complete Example
 
 ```prisma
-model Doctor {
-  id                String @id @default(cuid())
-  userId            String @unique
-  email             String @unique
-  gmcNumber         String @unique @db.VarChar(10)
-  applicationStatus ApplicationStatus
-  profileStatus     ProfileStatus
-  referredByDoctorId String?
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+model User {
+  id              String @id @default(cuid())
+  organizationId  String
+  email           String @unique
+  username        String @unique @db.VarChar(50)
+  status          UserStatus
+  role            UserRole
+  referredByUserId String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
 
   // Foreign key indexes
-  @@index([referredByDoctorId])
+  @@index([organizationId])
+  @@index([referredByUserId])
 
   // Query pattern indexes
-  @@index([applicationStatus])         // Filter by status
-  @@index([profileStatus])             // Filter visible doctors
-  @@index([email])                     // Lookup by email
-  @@index([gmcNumber])                 // Lookup by GMC
-  @@index([createdAt])                 // Sort by newest
+  @@index([status])              // Filter by status
+  @@index([role])                // Filter by role
+  @@index([email])               // Lookup by email
+  @@index([createdAt])           // Sort by newest
 }
 ```
 

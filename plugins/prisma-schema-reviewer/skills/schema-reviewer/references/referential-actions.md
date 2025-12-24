@@ -17,17 +17,17 @@
 Is the child record meaningful without the parent?
 │
 ├── NO → Use Cascade
-│        Example: Delete all DoctorSpecialty when Doctor deleted
+│        Example: Delete all UserSkill when User deleted
 │
 └── YES → Should the reference be preserved?
           │
           ├── YES → Use SetNull (field must be nullable!)
-          │         Example: Doctor.referredByDoctorId → keep doctor, clear reference
+          │         Example: User.referredByUserId → keep user, clear reference
           │
           └── NO → Should deletion be prevented?
                    │
                    ├── YES → Use Restrict
-                   │         Example: Can't delete Speciality if doctors have it
+                   │         Example: Can't delete Skill if users have it
                    │
                    └── NO → Use NoAction
                             Example: Self-relations, complex cascades
@@ -49,20 +49,20 @@ model Post {
 ### SetNull (Preserve child, clear reference)
 
 ```prisma
-model Doctor {
-  referredByDoctorId String?  // MUST be nullable for SetNull
-  referredByDoctor   Doctor?  @relation(fields: [referredByDoctorId], references: [id], onDelete: SetNull)
+model User {
+  referredByUserId String?  // MUST be nullable for SetNull
+  referredByUser   User?    @relation(fields: [referredByUserId], references: [id], onDelete: SetNull)
 }
-// When referring doctor deleted → this doctor remains, referredByDoctorId becomes NULL
+// When referring user deleted → this user remains, referredByUserId becomes NULL
 ```
 
 ### Restrict (Prevent deletion)
 
 ```prisma
-model Speciality {
-  doctors DoctorSpecialty[]  // Implicit Restrict
+model Skill {
+  users UserSkill[]  // Implicit Restrict
 }
-// Cannot delete Speciality if any DoctorSpecialty records reference it
+// Cannot delete Skill if any UserSkill records reference it
 ```
 
 ### NoAction (Required for self-relations)
@@ -88,35 +88,35 @@ If not specified, Prisma applies defaults:
 
 **Best Practice**: Always specify explicitly to be clear about intent.
 
-## Common Patterns for IWAD
+## Common Patterns
 
 ### Join Tables (Cascade both sides)
 
 ```prisma
-model DoctorSpecialty {
-  doctor    Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  specialty Speciality @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+model UserSkill {
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 }
-// Delete DoctorSpecialty when either Doctor OR Speciality is deleted
+// Delete UserSkill when either User OR Skill is deleted
 ```
 
-### Analytics (Cascade from Doctor)
+### Analytics (Cascade from parent)
 
 ```prisma
-model DoctorAnalytics {
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+model UserAnalytics {
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
-// Delete analytics when Doctor is deleted (no orphan data)
+// Delete analytics when User is deleted (no orphan data)
 ```
 
 ### Referrals (SetNull to preserve history)
 
 ```prisma
-model Doctor {
-  referredByDoctorId String?
-  referredByDoctor   Doctor? @relation(fields: [referredByDoctorId], references: [id], onDelete: SetNull)
+model User {
+  referredByUserId String?
+  referredByUser   User? @relation(fields: [referredByUserId], references: [id], onDelete: SetNull)
 }
-// If referring doctor deleted, keep this doctor but clear the reference
+// If referring user deleted, keep this user but clear the reference
 ```
 
 ## Anti-Patterns

@@ -26,16 +26,16 @@ model Post {
 **Critical Rule**: Self-relations MUST use `NoAction` to avoid cycles.
 
 ```prisma
-// Doctor-to-Doctor referrals
-model Doctor {
-  id                 String   @id @default(cuid())
-  referredByDoctorId String?
+// User-to-User referrals
+model User {
+  id               String   @id @default(cuid())
+  referredByUserId String?
 
   // Self-relation with REQUIRED NoAction
-  referredByDoctor   Doctor?  @relation("DoctorReferrals", fields: [referredByDoctorId], references: [id], onDelete: SetNull)
-  doctorReferrals    Doctor[] @relation("DoctorReferrals")
+  referredByUser   User?    @relation("UserReferrals", fields: [referredByUserId], references: [id], onDelete: SetNull)
+  userReferrals    User[]   @relation("UserReferrals")
 
-  @@index([referredByDoctorId])
+  @@index([referredByUserId])
 }
 ```
 
@@ -69,30 +69,30 @@ model Tag {
 Use when you need extra fields like `isPrimary`, `createdAt`:
 
 ```prisma
-model Doctor {
-  id          String            @id @default(cuid())
-  specialties DoctorSpecialty[]
+model User {
+  id     String      @id @default(cuid())
+  skills UserSkill[]
 }
 
-model Speciality {
-  id      String            @id @default(cuid())
-  doctors DoctorSpecialty[]
+model Skill {
+  id    String      @id @default(cuid())
+  users UserSkill[]
 }
 
 // Explicit join table with metadata
-model DoctorSpecialty {
-  id          String   @id @default(cuid())
-  doctorId    String
-  specialtyId String
-  isPrimary   Boolean  @default(false)  // Extra metadata!
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+model UserSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  skillId   String
+  isPrimary Boolean  @default(false)  // Extra metadata!
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
 
-  doctor    Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  specialty Speciality @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  @@unique([doctorId, specialtyId])  // Prevent duplicates
-  @@index([doctorId])
-  @@index([specialtyId])
+  @@unique([userId, skillId])  // Prevent duplicates
+  @@index([userId])
+  @@index([skillId])
   @@index([isPrimary])
 }
 ```

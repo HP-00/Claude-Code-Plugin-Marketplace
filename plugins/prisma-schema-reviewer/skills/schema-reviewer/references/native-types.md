@@ -8,7 +8,7 @@ Use `@db.*` attributes to specify exact database column types for optimal storag
 |-------------|---------|----------|---------|
 | `@db.VarChar(n)` | Variable up to n | Names, titles, slugs (known max) | `name String @db.VarChar(150)` |
 | `@db.Char(n)` | Fixed n bytes | Fixed-length codes (ISO, country) | `countryCode String @db.Char(2)` |
-| `@db.Text` | Unlimited | Descriptions, content, markdown | `aboutMe String? @db.Text` |
+| `@db.Text` | Unlimited | Descriptions, content, markdown | `bio String? @db.Text` |
 
 **Best Practice**: Use `@db.VarChar(n)` when you know the maximum length. It saves storage compared to unlimited TEXT.
 
@@ -17,7 +17,7 @@ Use `@db.*` attributes to specify exact database column types for optimal storag
 | Native Type | Range | Use Case | Example |
 |-------------|-------|----------|---------|
 | `@db.SmallInt` | -32K to 32K | Small counters, age | `displayOrder Int @db.SmallInt` |
-| `@db.Integer` | -2B to 2B | Standard IDs, counts | `resubmissionCount Int` |
+| `@db.Integer` | -2B to 2B | Standard IDs, counts | `loginCount Int` |
 | `@db.BigInt` | ±9 quintillion | Large sequences | `viewCount BigInt` |
 | `@db.Decimal(p,s)` | Exact precision | **Money, financial** | `price Decimal @db.Decimal(10,2)` |
 | `@db.DoublePrecision` | Approximate | Scientific, coordinates | `latitude Float` |
@@ -30,7 +30,7 @@ Use `@db.*` attributes to specify exact database column types for optimal storag
 |-------------|---------|----------|---------|
 | `@db.Timestamptz(6)` | 8 bytes | Events, audit logs (with TZ) | `createdAt DateTime @db.Timestamptz(6)` |
 | `@db.Timestamp(6)` | 8 bytes | Local time (no TZ) | Rarely used |
-| `@db.Date` | 4 bytes | Birthdays, due dates | `gmcNextVerificationDue DateTime? @db.Date` |
+| `@db.Date` | 4 bytes | Birthdays, due dates | `dateOfBirth DateTime? @db.Date` |
 | `@db.Time` | 8 bytes | Daily schedules | `openingTime DateTime @db.Time` |
 
 **Best Practice**: Always use `@db.Timestamptz(6)` for timestamps - it stores in UTC and handles timezone conversion.
@@ -45,10 +45,10 @@ Use `@db.*` attributes to specify exact database column types for optimal storag
 **Always use `@db.JsonB`**:
 ```prisma
 // GOOD
-featuredQA Json? @db.JsonB
+metadata Json? @db.JsonB
 
 // BAD
-featuredQA Json
+metadata Json
 ```
 
 ## Code Examples
@@ -56,32 +56,32 @@ featuredQA Json
 ### Complete Model with Proper Native Types
 
 ```prisma
-model Doctor {
-  id                String   @id @default(cuid())
+model User {
+  id              String   @id @default(cuid())
 
   // Strings with known max length
-  name              String?  @db.VarChar(150)
-  gmcNumber         String   @unique @db.VarChar(10)
-  summary           String?  @db.VarChar(200)
+  name            String?  @db.VarChar(150)
+  email           String   @unique @db.VarChar(255)
+  username        String   @unique @db.VarChar(50)
 
   // Unlimited text content
-  aboutMe           String?  @db.Text
-  websiteUrl        String?  @db.Text
+  bio             String?  @db.Text
+  avatarUrl       String?  @db.Text
 
   // Timestamps with timezone
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
-  gmcVerifiedAt     DateTime? @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+  emailVerifiedAt DateTime? @db.Timestamptz(6)
 
   // Date-only fields (no time component)
-  gmcNextVerificationDue DateTime? @db.Date
-  suspendedAt            DateTime? @db.Date
+  dateOfBirth     DateTime? @db.Date
+  subscriptionEndsAt DateTime? @db.Date
 
   // JSON binary format
-  featuredQA        Json?    @db.JsonB
+  preferences     Json?    @db.JsonB
 
   // Arrays
-  secondarySpecialInterests String[]
+  interests       String[]
 }
 ```
 
