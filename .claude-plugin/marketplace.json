@@ -15,6 +15,14 @@
       "version": "1.0.0",
       "category": "database",
       "keywords": ["prisma", "postgresql", "database", "schema", "review", "best-practices"]
+    },
+    {
+      "name": "dependency-security-gate",
+      "source": "./plugins/dependency-security-gate",
+      "description": "Security gate that intercepts every dependency install or external download (npm/yarn/pnpm/bun/pip/uv/poetry/cargo/gem/brew/apt/dnf/go/pod/curl/wget/aria2c/git clone/huggingface-cli) and forces a structured 11-item security review before allowing the action. Ships a PreToolUse hook + auto-discoverable skill + dependency-research subagent (with native WebFetch/WebSearch fallbacks when Context7/Exa MCPs aren't installed).",
+      "version": "1.0.0",
+      "category": "security",
+      "keywords": ["security", "supply-chain", "dependencies", "install-gate", "subagent", "hooks", "shai-hulud", "slopsquat"]
     }
   ]
 }

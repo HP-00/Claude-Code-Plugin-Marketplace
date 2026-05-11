@@ -1,0 +1,26 @@
+{
+  "name": "dependency-security-gate",
+  "version": "1.0.0",
+  "description": "Security gate that intercepts every dependency install or external download (npm/yarn/pnpm/bun/pip/uv/poetry/cargo/gem/brew/apt/dnf/go/pod/curl/wget/aria2c/git clone/huggingface-cli) and forces a structured 11-item security review before allowing the action. Ships a PreToolUse hook, an auto-discoverable skill carrying the analysis structure, and a `dependency-research` subagent that runs parallel Context7 + Exa MCP research with native WebFetch/WebSearch fallbacks when those MCPs are not installed.",
+  "author": {
+    "name": "HP-00",
+    "url": "https://github.com/HP-00"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HP-00/Claude-Code-Plugin-Marketplace"
+  },
+  "keywords": [
+    "security",
+    "supply-chain",
+    "dependencies",
+    "install-gate",
+    "subagent",
+    "hooks",
+    "npm",
+    "pip",
+    "cargo",
+    "shai-hulud",
+    "slopsquat"
+  ]
+}
