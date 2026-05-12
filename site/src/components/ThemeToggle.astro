@@ -1,0 +1,20 @@
+---
+// Renders [light] [dark] buttons. Default-pressed state is set on the
+// client by Base.astro's inline init script so the markup stays static.
+---
+
+<div class="theme-toggle" role="group" aria-label="Theme">
+  <button
+    type="button"
+    class="theme-toggle__btn"
+    data-theme-set="light"
+    aria-pressed="false"
+  >light</button>
+  <span class="theme-toggle__sep" aria-hidden="true">/</span>
+  <button
+    type="button"
+    class="theme-toggle__btn"
+    data-theme-set="dark"
+    aria-pressed="false"
+  >dark</button>
+</div>

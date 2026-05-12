@@ -1,0 +1,11 @@
+# Astro site
+site/node_modules/
+site/dist/
+site/.astro/
+
+# Local env
+site/.env
+site/.env.local
+
+# OS
+.DS_Store

@@ -1,0 +1,59 @@
+name: Deploy marketplace site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".claude-plugin/marketplace.json"
+      - "plugins/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # for `git log -1 --format=%cs -- plugins/<name>` per plugin
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - name: Install site dependencies (pinned versions)
+        working-directory: site
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site
+        working-directory: site
+        run: pnpm build
+
+      - name: Install here.now publish skill
+        # Path 1 from supply-chain audit: routes through Vercel's `skills` CLI
+        # (markdown + script copy from heredotnow/skill, no arbitrary code at install).
+        run: npx -y skills add heredotnow/skill --skill here-now -g
+
+      - name: Deploy to here.now
+        env:
+          HERENOW_API_KEY: ${{ secrets.HERENOW_API_KEY }}
+        run: |
+          ~/.claude/skills/here-now/scripts/publish.sh site/dist \
+            --slug hp-00-plugins \
+            --title "HP-00 / Plugins" \
+            --description "Security-first plugins for Claude Code"

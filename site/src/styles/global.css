@@ -1,0 +1,421 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #000000;
+  --color-surface: #0B0B0C;
+  --color-border: #1A1A1C;
+  --color-border-hi: #2A2A2D;
+  --color-text: #F4F4F5;
+  --color-muted: #8A8A91;
+  --color-dim: #5A5A60;
+
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Light theme overrides — the inline init script in Base.astro sets
+   data-theme on <html> before paint to avoid FOUC. */
+[data-theme="light"] {
+  --color-bg: #FFFFFF;
+  --color-surface: #F7F7F8;
+  --color-border: #E4E4E7;
+  --color-border-hi: #D4D4D8;
+  --color-text: #0A0A0B;
+  --color-muted: #71717A;
+  --color-dim: #A8A8B0;
+}
+
+@layer base {
+  html {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 14.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    color-scheme: dark;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-bg);
+  }
+
+  ::selection {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-hi);
+    border: 2px solid var(--color-bg);
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-dim);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    background: var(--color-border);
+    margin: 0;
+  }
+}
+
+@layer components {
+  .col {
+    width: 100%;
+    max-width: 640px;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  /* Section label — muted gray. */
+  .label {
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    margin: 0 0 1rem;
+  }
+
+  /* Inline link — no underline; hover communicates via color change */
+  .link {
+    color: var(--color-text);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  .link__arrow {
+    color: var(--color-dim);
+    margin-left: 0.25em;
+    font-size: 0.85em;
+    transition: color 150ms ease;
+  }
+  .link:hover .link__arrow {
+    color: var(--color-text);
+  }
+
+  /* Install command — minimal inline-feeling box */
+  .install {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+    transition: border-color 200ms ease;
+  }
+  .install:hover {
+    border-color: var(--color-border-hi);
+  }
+  .install__prompt {
+    color: var(--color-dim);
+    user-select: none;
+    flex: none;
+  }
+  .install__cmd {
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .install__cmd::-webkit-scrollbar { display: none; }
+
+  .copy-btn {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: color 150ms ease;
+  }
+  .copy-btn:hover {
+    color: var(--color-text);
+  }
+  .copy-btn[data-copied="true"] {
+    color: var(--color-text);
+  }
+  /* Stack both icons in the same grid cell so we can cross-fade between them */
+  .copy-icon {
+    grid-area: 1 / 1;
+    transition: opacity 350ms ease;
+  }
+  .copy-icon--check {
+    opacity: 0;
+  }
+  .copy-btn[data-copied="true"] .copy-icon--copy {
+    opacity: 0;
+  }
+  .copy-btn[data-copied="true"] .copy-icon--check {
+    opacity: 1;
+  }
+
+  /* Plugin list — single grid so columns align across all rows.
+     auto + 1fr + auto: [category] sits in a flexible middle column
+     (centered); column-gap kept small so elements close together as
+     screen narrows before any wrap kicks in. */
+  .plugin-list {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 0.5rem;
+    row-gap: 0.625rem;
+    align-items: baseline;
+  }
+  .entry {
+    display: contents;
+  }
+  .entry__title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--color-text);
+  }
+  .entry__title a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .entry__category {
+    margin: 0;
+    text-align: center;
+    color: var(--color-dim);
+    font-size: 0.8125rem;
+    transition: color 200ms ease;
+  }
+  .entry__date {
+    margin: 0;
+    color: var(--color-dim);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    transition: color 200ms ease;
+  }
+  /* Hovering the plugin name lifts the row's arrow + category + date to text color.
+     Hovering the [tag] or [date] does NOT trigger this — the :has() match is scoped
+     to the title's <a>. */
+  .entry:has(.entry__title a:hover) .link__arrow,
+  .entry:has(.entry__title a:hover) .entry__category,
+  .entry:has(.entry__title a:hover) .entry__date {
+    color: var(--color-text);
+  }
+  @media (max-width: 640px) {
+    .plugin-list {
+      display: block;
+    }
+    .entry {
+      display: block;
+      margin-bottom: 1rem;
+    }
+    .entry__category,
+    .entry__date {
+      text-align: left;
+      color: var(--color-dim);
+      margin-top: 0.125rem;
+    }
+  }
+
+  /* Body prose used in the index sections + per-plugin top section.
+     Sized to match the install-command font (0.8125rem) for uniform Install section. */
+  .prose-min {
+    color: var(--color-text);
+    line-height: 1.7;
+    font-size: 0.8125rem;
+  }
+  .prose-min p {
+    margin: 0 0 1rem;
+    color: var(--color-text);
+  }
+  .prose-min p.muted {
+    color: var(--color-muted);
+  }
+  .prose-min em {
+    font-style: italic;
+    color: var(--color-text);
+  }
+  .prose-min code {
+    font-family: var(--font-mono);
+    color: var(--color-text);
+    background: var(--color-surface);
+    padding: 0.05em 0.35em;
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    font-size: 1em;
+  }
+  .prose-min a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-hi);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 150ms ease;
+  }
+  .prose-min a:hover {
+    text-decoration-color: var(--color-text);
+  }
+
+  /* Section spacing — tight */
+  .section {
+    margin-top: 2.75rem;
+  }
+  .section--tight {
+    margin-top: 2rem;
+  }
+
+  /* README prose styling — used on plugin detail pages */
+  .prose-md {
+    font-family: var(--font-mono);
+    color: var(--color-text);
+    line-height: 1.7;
+    font-size: 0.875rem;
+  }
+  .prose-md > *:first-child { margin-top: 0; }
+  .prose-md h1,
+  .prose-md h2,
+  .prose-md h3,
+  .prose-md h4 {
+    font-family: var(--font-mono);
+    color: var(--color-text);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+  }
+  .prose-md h1 { font-size: 1.375rem; margin: 3rem 0 1rem; }
+  .prose-md h2 {
+    font-size: 1.0625rem;
+    margin: 2.75rem 0 0.875rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .prose-md h3 { font-size: 0.9375rem; margin: 2rem 0 0.625rem; }
+  .prose-md h4 { font-size: 0.8125rem; margin: 1.5rem 0 0.5rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .prose-md p { margin: 0.875rem 0; color: var(--color-text); }
+  .prose-md a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-hi);
+    text-underline-offset: 3px;
+  }
+  .prose-md a:hover { text-decoration-color: var(--color-text); }
+  .prose-md ul, .prose-md ol { margin: 0.875rem 0; padding-left: 1.5rem; }
+  .prose-md li { margin: 0.25rem 0; }
+  .prose-md ul > li::marker { color: var(--color-dim); }
+  .prose-md ol > li::marker { color: var(--color-muted); }
+  .prose-md code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--color-text);
+    background: var(--color-surface);
+    padding: 0.05em 0.35em;
+    border-radius: 3px;
+    border: 1px solid var(--color-border);
+  }
+  .prose-md pre {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 0.875rem 1rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    line-height: 1.55;
+    color: var(--color-text);
+  }
+  .prose-md pre code {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+  .prose-md blockquote {
+    border-left: 1px solid var(--color-border-hi);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--color-muted);
+  }
+  .prose-md table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+  }
+  .prose-md th, .prose-md td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+  }
+  .prose-md th {
+    font-weight: 500;
+    color: var(--color-muted);
+    border-bottom-color: var(--color-border-hi);
+  }
+  .prose-md hr {
+    margin: 1.75rem 0;
+  }
+  .prose-md img { max-width: 100%; border-radius: 4px; margin: 1rem 0; }
+  .prose-md strong { color: var(--color-text); font-weight: 600; }
+}
+
+/* Theme toggle — `light / dark` in the dim color, active gets muted (matches github link) */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-mono);
+}
+.theme-toggle__sep {
+  color: var(--color-dim);
+  font-size: 0.6875rem;
+  line-height: 1;
+}
+.theme-toggle__btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  line-height: 1;
+  transition: color 200ms ease;
+}
+.theme-toggle__btn:hover {
+  color: var(--color-muted);
+}
+.theme-toggle__btn[aria-pressed="true"] {
+  color: var(--color-muted);
+}
+.theme-toggle__btn:focus-visible {
+  outline: 1px solid var(--color-border-hi);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

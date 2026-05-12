@@ -1,0 +1,136 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "Open marketplace of security-first plugins for Claude Code.",
+} = Astro.props;
+
+const fullTitle = title === "HP-00 / Plugins" ? title : `${title} — HP-00 / Plugins`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://hp-00.here.now").toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script is:inline>
+      // FOUC-free theme init: must run before <body> paints.
+      // Default = system preference. Stored 'light'/'dark' overrides.
+      (function () {
+        try {
+          const stored = localStorage.getItem("theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.dataset.theme = stored;
+            return;
+          }
+          const prefersLight =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: light)").matches;
+          document.documentElement.dataset.theme = prefersLight ? "light" : "dark";
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+
+    <script>
+      // Copy buttons
+      const copyButtons = document.querySelectorAll<HTMLButtonElement>("[data-copy]");
+      copyButtons.forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const text = btn.getAttribute("data-copy") ?? "";
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.dataset.copied = "true";
+            setTimeout(() => {
+              btn.dataset.copied = "false";
+            }, 1500);
+          } catch (e) {
+            console.error("Clipboard write failed", e);
+          }
+        });
+      });
+
+      // Theme toggle: 'light' | 'dark'. No stored value = follow system.
+      const lightMq = window.matchMedia("(prefers-color-scheme: light)");
+
+      const setPressed = (theme: string) => {
+        document
+          .querySelectorAll<HTMLButtonElement>("[data-theme-set]")
+          .forEach((btn) => {
+            btn.setAttribute(
+              "aria-pressed",
+              btn.dataset.themeSet === theme ? "true" : "false",
+            );
+          });
+      };
+
+      const initialTheme =
+        (document.documentElement.dataset.theme as string | undefined) ?? "dark";
+      setPressed(initialTheme);
+
+      document
+        .querySelectorAll<HTMLButtonElement>("[data-theme-set]")
+        .forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const theme = btn.dataset.themeSet ?? "dark";
+            document.documentElement.dataset.theme = theme;
+            try {
+              localStorage.setItem("theme", theme);
+            } catch (e) {
+              /* storage may be unavailable */
+            }
+            setPressed(theme);
+          });
+        });
+
+      // If the user hasn't picked an explicit theme, track system changes live.
+      const onSystemChange = () => {
+        let stored: string | null = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch (e) {
+          /* storage unavailable */
+        }
+        if (stored !== "light" && stored !== "dark") {
+          const next = lightMq.matches ? "light" : "dark";
+          document.documentElement.dataset.theme = next;
+          setPressed(next);
+        }
+      };
+      if (typeof lightMq.addEventListener === "function") {
+        lightMq.addEventListener("change", onSystemChange);
+      } else if (typeof (lightMq as MediaQueryList).addListener === "function") {
+        (lightMq as MediaQueryList).addListener(onSystemChange);
+      }
+    </script>
+  </body>
+</html>

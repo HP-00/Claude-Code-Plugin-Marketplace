@@ -1,0 +1,181 @@
+---
+import Base from "../../layouts/Base.astro";
+import InstallBox from "../../components/InstallBox.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import { getPlugins, type Plugin } from "../../data/plugins";
+
+export async function getStaticPaths() {
+  return getPlugins().map((p) => ({
+    params: { plugin: p.slug },
+    props: { plugin: p },
+  }));
+}
+
+interface Props {
+  plugin: Plugin;
+}
+
+const { plugin } = Astro.props;
+const installCmd = `/plugin install ${plugin.name}@hp-00-plugins`;
+---
+
+<Base title={plugin.name} description={plugin.description}>
+  <main class="page">
+    <div class="col">
+      <nav class="topnav" aria-label="Top">
+        <a href="/" class="topnav__brand">
+          <span aria-hidden="true">←</span> HP-00 / Plugins
+        </a>
+        <ThemeToggle />
+      </nav>
+
+      <header class="head">
+        <p class="label">{plugin.category}</p>
+        <h1 class="head__title">{plugin.name}</h1>
+        <p class="head__desc">{plugin.description}</p>
+      </header>
+
+      <section class="section--tight">
+        <p class="label">Install</p>
+        <InstallBox command={installCmd} />
+      </section>
+
+      <section class="section--tight meta-section">
+        <dl class="meta">
+          <div class="meta__item">
+            <dt>Version</dt>
+            <dd>{plugin.version}</dd>
+          </div>
+          <div class="meta__item">
+            <dt>Author</dt>
+            <dd>{plugin.author.name}</dd>
+          </div>
+          <div class="meta__item">
+            <dt>Updated</dt>
+            <dd>{plugin.updated || "—"}</dd>
+          </div>
+          <div class="meta__item">
+            <dt>Source</dt>
+            <dd>
+              <a href={plugin.githubUrl} rel="noopener" target="_blank" class="link">
+                GitHub
+                <span class="link__arrow" aria-hidden="true">↗</span>
+              </a>
+            </dd>
+          </div>
+        </dl>
+
+        {plugin.keywords.length > 0 && (
+          <p class="kw">
+            {plugin.keywords.map((k, i) => (
+              <span class="kw__item">
+                {k}{i < plugin.keywords.length - 1 ? <span class="kw__sep" aria-hidden="true"> · </span> : null}
+              </span>
+            ))}
+          </p>
+        )}
+      </section>
+
+      <hr class="readme-rule" />
+
+      <section class="readme">
+        {plugin.readmeHtml ? (
+          <div class="prose-md" set:html={plugin.readmeHtml} />
+        ) : (
+          <p class="prose-min muted">
+            No README is bundled with this plugin yet. The marketplace metadata above is the authoritative source.
+          </p>
+        )}
+      </section>
+
+      <footer class="foot">
+        <a href="/" class="link">← back to all plugins</a>
+      </footer>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .page {
+    padding: 4rem 0 3rem;
+  }
+  @media (max-width: 640px) {
+    .page {
+      padding: 2.5rem 0 2.5rem;
+    }
+  }
+  .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 2.5rem;
+  }
+  .topnav__brand {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    font-weight: 500;
+    transition: color 150ms ease;
+  }
+  .topnav__brand:hover {
+    color: var(--color-text);
+  }
+  .head__title {
+    margin: 0.625rem 0 0.625rem;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  .head__desc {
+    margin: 0;
+    color: var(--color-muted);
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+  .meta-section {
+    padding: 1.25rem 0 0;
+  }
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.25rem 1.5rem;
+    margin: 0 0 1.5rem;
+  }
+  .meta__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .meta__item dt {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+  }
+  .meta__item dd {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.875rem;
+  }
+  .kw {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+  }
+  .kw__sep {
+    color: var(--color-dim);
+  }
+  .readme-rule {
+    margin: 2.5rem 0 1rem;
+  }
+  .readme {
+    margin-top: 0.5rem;
+  }
+  .foot {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+  }
+</style>

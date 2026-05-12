@@ -5,6 +5,8 @@
 
 A collection of Claude Code plugins by HP-00.
 
+> **Website**: [hp-00.here.now](https://hp-00.here.now) — browsable plugin listing, per-plugin pages, install commands, and docs. Regenerated from this repo on every push.
+
 ## Overview
 
 This marketplace provides plugins for [Claude Code](https://www.anthropic.com/news/claude-code-plugins), Anthropic's agentic coding tool. Plugins can include slash commands, subagents, agent skills, hooks, and MCP server integrations.
