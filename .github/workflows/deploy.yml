@@ -44,10 +44,29 @@ jobs:
         working-directory: site
         run: pnpm build
 
-      - name: Install here.now publish skill
-        # Path 1 from supply-chain audit: routes through Vercel's `skills` CLI
-        # (markdown + script copy from heredotnow/skill, no arbitrary code at install).
-        run: npx -y skills add heredotnow/skill --skill here-now -g
+      - name: Install here.now publish script
+        # Direct fetch of just publish.sh, pinned to a specific commit SHA.
+        # - Reproducible: same script every run; can't change underneath us.
+        # - Tamper-evident: SHA-256 verification fails the run if the served
+        #   content drifts from what was audited at this commit.
+        # - Minimum surface: no installer, no extra files, no jq binary —
+        #   ubuntu-latest provides jq, and publish.sh falls back to system jq
+        #   when no bundled `bin/jq` exists.
+        # Pin: heredotnow/skill@282d29d (2026-04-28, past 72h cooldown).
+        # Last publish.sh change: 44e0208 (2026-04-27).
+        run: |
+          mkdir -p ~/.claude/skills/here-now/scripts
+          SCRIPT_URL="https://raw.githubusercontent.com/heredotnow/skill/282d29df5313e896c0e8fc36c8a53b624b20796a/here-now/scripts/publish.sh"
+          EXPECTED_SHA256="98a617c54c95a29bb447efb876cf7d621f7456947905cd2a4051f324881916a7"
+          curl -fsSL --proto '=https' --tlsv1.2 "$SCRIPT_URL" \
+            -o ~/.claude/skills/here-now/scripts/publish.sh
+          ACTUAL_SHA256="$(sha256sum ~/.claude/skills/here-now/scripts/publish.sh | awk '{print $1}')"
+          if [ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]; then
+            echo "::error::publish.sh checksum mismatch (expected $EXPECTED_SHA256, got $ACTUAL_SHA256)" >&2
+            exit 1
+          fi
+          chmod +x ~/.claude/skills/here-now/scripts/publish.sh
+          echo "OK publish.sh installed (sha256: $ACTUAL_SHA256)"
 
       - name: Deploy to here.now
         env:
