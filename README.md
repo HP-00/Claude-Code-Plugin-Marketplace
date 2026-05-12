@@ -5,7 +5,7 @@
 
 A collection of Claude Code plugins by HP-00.
 
-> **Website**: [hidden-plover-gper.here.now](https://hidden-plover-gper.here.now) — browsable plugin listing, per-plugin pages, install commands. Regenerated from this repo on every push.
+> **Website**: [huzayfah.here.now/plugins](https://huzayfah.here.now/plugins/) — browsable plugin listing, per-plugin pages, install commands. Regenerated from this repo on every push.
 
 ## Overview
 

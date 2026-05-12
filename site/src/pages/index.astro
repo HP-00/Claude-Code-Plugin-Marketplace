@@ -6,6 +6,8 @@ import { getPlugins, getMarketplaceMeta } from "../data/plugins";
 
 const plugins = getPlugins();
 const meta = getMarketplaceMeta();
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith("/") ? baseRaw : baseRaw + "/";
 ---
 
 <Base title="HP-00 / Plugins">
@@ -29,7 +31,7 @@ const meta = getMarketplaceMeta();
           {plugins.map((p) => (
             <article class="entry">
               <h2 class="entry__title">
-                <a href={`/plugins/${p.slug}`}>
+                <a href={`${base}${p.slug}`}>
                   {p.name}
                   <span class="link__arrow" aria-hidden="true">→</span>
                 </a>

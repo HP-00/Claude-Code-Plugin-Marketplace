@@ -1,8 +1,8 @@
 ---
-import Base from "../../layouts/Base.astro";
-import InstallBox from "../../components/InstallBox.astro";
-import ThemeToggle from "../../components/ThemeToggle.astro";
-import { getPlugins, type Plugin } from "../../data/plugins";
+import Base from "../layouts/Base.astro";
+import InstallBox from "../components/InstallBox.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import { getPlugins, type Plugin } from "../data/plugins";
 
 export async function getStaticPaths() {
   return getPlugins().map((p) => ({
@@ -17,13 +17,15 @@ interface Props {
 
 const { plugin } = Astro.props;
 const installCmd = `/plugin install ${plugin.name}@hp-00-plugins`;
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith("/") ? baseRaw : baseRaw + "/";
 ---
 
 <Base title={plugin.name} description={plugin.description}>
   <main class="page">
     <div class="col">
       <nav class="topnav" aria-label="Top">
-        <a href="/" class="topnav__brand">
+        <a href={base} class="topnav__brand">
           <span aria-hidden="true">←</span> HP-00 / Plugins
         </a>
         <ThemeToggle />
@@ -89,7 +91,7 @@ const installCmd = `/plugin install ${plugin.name}@hp-00-plugins`;
       </section>
 
       <footer class="foot">
-        <a href="/" class="link">← back to all plugins</a>
+        <a href={base} class="link">← back to all plugins</a>
       </footer>
     </div>
   </main>
