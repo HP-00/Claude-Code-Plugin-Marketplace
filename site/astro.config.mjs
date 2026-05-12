@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://hp-00.here.now',
+  site: 'https://hidden-plover-gper.here.now',
   vite: {
     plugins: [tailwindcss()],
   },
