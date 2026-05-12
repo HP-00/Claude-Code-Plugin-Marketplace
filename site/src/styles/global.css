@@ -173,12 +173,13 @@
   }
 
   /* Plugin list — single grid so columns align across all rows.
-     auto + 1fr + auto: [category] sits in a flexible middle column
-     (centered); column-gap kept small so elements close together as
-     screen narrows before any wrap kicks in. */
+     5-column trick: title | spacer-1fr | category-auto | spacer-1fr | date.
+     The two 1fr spacers center the category column visually between title
+     and date. Category column is auto-sized to the widest category text,
+     so all rows' [tags] start at the same x. */
   .plugin-list {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr auto 1fr auto;
     column-gap: 0.5rem;
     row-gap: 0.625rem;
     align-items: baseline;
@@ -186,6 +187,9 @@
   .entry {
     display: contents;
   }
+  .entry__title { grid-column: 1; }
+  .entry__category { grid-column: 3; }
+  .entry__date { grid-column: 5; }
   .entry__title {
     margin: 0;
     font-size: 0.8125rem;
@@ -198,7 +202,7 @@
   }
   .entry__category {
     margin: 0;
-    text-align: center;
+    text-align: left;
     color: var(--color-dim);
     font-size: 0.8125rem;
     transition: color 200ms ease;
