@@ -6,10 +6,7 @@
     "name": "HP-00",
     "url": "https://github.com/HP-00"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/HP-00/Claude-Code-Plugin-Marketplace"
-  },
+  "repository": "https://github.com/HP-00/Claude-Code-Plugin-Marketplace",
   "keywords": [
     "design-system",
     "monospace",

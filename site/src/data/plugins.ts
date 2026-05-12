@@ -52,7 +52,7 @@ interface PluginManifest {
   version: string;
   description: string;
   author?: { name: string; url?: string };
-  repository?: { type: string; url: string };
+  repository?: string;
   keywords?: string[];
 }
 
