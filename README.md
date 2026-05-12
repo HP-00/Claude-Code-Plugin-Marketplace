@@ -41,6 +41,7 @@ Once the marketplace is added, install any plugin:
 |--------|---------|-------------|----------|
 | [prisma-schema-reviewer](plugins/prisma-schema-reviewer) | 1.0.0 | Interactive Prisma schema review with expert guidance on native types, indexes, relations, and referential actions | Database |
 | [dependency-security-gate](plugins/dependency-security-gate) | 1.0.0 | Pre-install security gate: blocks `npm install` / `pip install` / `cargo install` / curl-downloads / `git clone` / HuggingFace pulls and forces a structured 11-item review (delegated to a `dependency-research` subagent) before approving | Security |
+| [minimal-mono-design](plugins/minimal-mono-design) | 1.0.0 | Minimal monochrome design system — Geist Mono, light/dark/system theme via CSS custom properties with FOUC-free init, terminal-styled components. Optimized for Astro + Tailwind 4; explicit guidance for Next.js (App Router), plain HTML/CSS, and other CSS frameworks | Design |
 
 ## Managing the Marketplace
 
