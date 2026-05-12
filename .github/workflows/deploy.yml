@@ -78,8 +78,30 @@ jobs:
       - name: Deploy to here.now
         env:
           HERENOW_API_KEY: ${{ secrets.HERENOW_API_KEY }}
+          # First deploy: leave HERENOW_SLUG unset → POST /api/v1/publish
+          # creates a new site with an auto-assigned slug (printed in this
+          # step's output). Set the printed value as a repo variable named
+          # HERENOW_SLUG (Settings → Variables → Actions). Every subsequent
+          # deploy then sends PUT /api/v1/publish/<slug> to update in place.
+          HERENOW_SLUG: ${{ vars.HERENOW_SLUG }}
         run: |
-          ~/.claude/skills/here-now/scripts/publish.sh site/dist \
-            --slug hp-00-plugins \
-            --title "HP-00 / Plugins" \
-            --description "Security-first plugins for Claude Code"
+          set -e
+          PUBLISH=~/.claude/skills/here-now/scripts/publish.sh
+          TITLE="HP-00 / Plugins"
+          DESC="Security-first plugins for Claude Code"
+
+          if [ -n "$HERENOW_SLUG" ]; then
+            echo "Updating existing slug: $HERENOW_SLUG"
+            "$PUBLISH" site/dist \
+              --slug "$HERENOW_SLUG" \
+              --title "$TITLE" \
+              --description "$DESC"
+          else
+            echo "No HERENOW_SLUG set — creating a new publish (first deploy path)"
+            "$PUBLISH" site/dist \
+              --title "$TITLE" \
+              --description "$DESC" \
+              | tee /tmp/publish.out
+            echo
+            echo "::notice title=Set HERENOW_SLUG variable::Copy the slug from the URL above and set it as a repo variable named HERENOW_SLUG (Settings → Secrets and variables → Actions → Variables tab). Future deploys will then update the same site instead of creating new ones."
+          fi
