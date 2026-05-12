@@ -23,6 +23,14 @@
       "version": "1.0.0",
       "category": "security",
       "keywords": ["security", "supply-chain", "dependencies", "install-gate", "subagent", "hooks", "shai-hulud", "slopsquat"]
+    },
+    {
+      "name": "minimal-mono-design",
+      "source": "./plugins/minimal-mono-design",
+      "description": "Minimal monochrome design system — Geist Mono, light/dark/system theme via CSS custom properties with FOUC-free init, terminal-styled components. Optimized for Astro + Tailwind 4 by default; explicit guidance for Next.js (App Router), plain HTML/CSS, and any other CSS framework.",
+      "version": "1.0.0",
+      "category": "design",
+      "keywords": ["design-system", "monospace", "dark-mode", "light-mode", "geist-mono", "minimalist", "marketplace", "developer-tools"]
     }
   ]
 }

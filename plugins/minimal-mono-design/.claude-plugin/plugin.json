@@ -1,0 +1,23 @@
+{
+  "name": "minimal-mono-design",
+  "version": "1.0.0",
+  "description": "Minimal monochrome design system — Geist Mono typography, light/dark/system theme via CSS custom properties with FOUC-free init, 640px centered column layout, terminal-styled install boxes with copy-to-tick cross-fade, theme toggle, and prose-md README rendering. Default stack: Astro + Tailwind 4. Explicit guidance for Next.js (App Router), plain HTML/CSS, and any CSS-based framework.",
+  "author": {
+    "name": "HP-00",
+    "url": "https://github.com/HP-00"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HP-00/Claude-Code-Plugin-Marketplace"
+  },
+  "keywords": [
+    "design-system",
+    "monospace",
+    "dark-mode",
+    "light-mode",
+    "geist-mono",
+    "marketplace",
+    "minimalist",
+    "developer-tools"
+  ]
+}
