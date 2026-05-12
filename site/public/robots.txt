@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# This site is mounted at huzayfah.here.now/plugins/ — see /plugins/llms.txt
+# for a structured machine-readable summary intended for LLM agents.
