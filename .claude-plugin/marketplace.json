@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "A collection of Claude Code plugins by HP-00",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "plugins": [
     {
@@ -27,10 +27,25 @@
     {
       "name": "minimal-mono-design",
       "source": "./plugins/minimal-mono-design",
-      "description": "Minimal monochrome design system — Geist Mono, light/dark/system theme via CSS custom properties with FOUC-free init, terminal-styled components. Optimized for Astro + Tailwind 4 by default; explicit guidance for Next.js (App Router), plain HTML/CSS, and any other CSS framework.",
+      "description": "Minimal monochrome design system - Geist Mono, light/dark/system theme via CSS custom properties with FOUC-free init, terminal-styled components. Optimized for Astro + Tailwind 4 by default; explicit guidance for Next.js (App Router), plain HTML/CSS, and any other CSS framework.",
       "version": "1.0.0",
       "category": "design",
       "keywords": ["design-system", "monospace", "dark-mode", "light-mode", "geist-mono", "minimalist", "marketplace", "developer-tools"]
+    },
+    {
+      "name": "xquik-x-data",
+      "source": "./plugins/xquik-x-data",
+      "description": "Guides Xquik REST API and remote MCP workflows for X data, exports, monitoring, and webhooks",
+      "version": "1.0.0",
+      "category": "api",
+      "keywords": [
+        "xquik",
+        "x-data",
+        "mcp",
+        "api",
+        "webhooks",
+        "monitoring"
+      ]
     }
   ]
 }
